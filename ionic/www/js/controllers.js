@@ -1,5 +1,5 @@
 angular.module('mahvin')
-	.controller('QuizCtrl', function($state, $stateParams, DataService, $cordovaFileTransfer, $cordovaMedia, $cordovaFile) {
+	.controller('QuizCtrl', function($state, $stateParams, DataService, $cordovaFileTransfer, $cordovaMedia, $cordovaFile, $ionicLoading) {
 		var vm = this;
 
 		// sanity check
@@ -149,9 +149,16 @@ angular.module('mahvin')
 			vm.mode = 'learnmore';
 			vm.message = '';
 
+			$ionicLoading.show({
+				template: '<ion-spinner icon="lines"></ion-spinner><br>Finding info...',
+				delay: 100
+			});
+
 			DataService.learnMore(vm.question.question)
 				.then(function(response) {
 					vm.insight = response.data;
+
+					$ionicLoading.hide();
 				}, function(err) {
 					console.error(JSON.stringify(err));
 				});
@@ -430,13 +437,17 @@ angular.module('mahvin')
 				$cordovaImagePicker.getPictures(options)
 					.then(function (results) {
 						console.log('Getting image ' + results[0]);
+						$ionicLoading.show({
+							template: '<ion-spinner icon="lines"></ion-spinner><br>Converting...',
+							delay: 100
+						});
 
 						$cordovaFileTransfer.upload('http://mahvin.mybluemix.net/textandimage/text', results[0])
 								.then(function(result) {
 									// Success!
 									console.log('Uploaded');
 
-									if (type === 'qeustion') {
+									if (type === 'question') {
 										vm.question = result.response
 											.split('"')
 											.join('');
@@ -445,6 +456,8 @@ angular.module('mahvin')
 											.split('"')
 											.join('');
 									}
+
+									$ionicLoading.hide();
 
 								}, function(err) {
 									// Error

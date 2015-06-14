@@ -77,7 +77,7 @@
 
             <div class="item"
               ng-repeat="concept in quiz.insight.related_concepts track by $index">
-              <a onclick="window.open('{{concept.wikipedia_link}}')">
+              <a ng-href="{{concept.wikipedia_link}}">
                 {{concept.concept}}
               </a>
             </div>

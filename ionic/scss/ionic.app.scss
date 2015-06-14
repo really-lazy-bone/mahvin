@@ -170,11 +170,6 @@ h1 {
 		flex: 1;
 	}
 
-	.card, .list-inset {
-		height: 160px;
-		overflow: auto;
-	}
-
 	.actions {
 		position: absolute;
 		bottom: 2px;
@@ -337,6 +332,8 @@ h1 {
 		position: absolute;
 		top: 0;
 		left: 0;
+
+		padding: 1em;
 	}
 
 	.front {

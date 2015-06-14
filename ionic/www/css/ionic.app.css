@@ -7887,7 +7887,8 @@ h1 {
     -webkit-backface-visibility: hidden;
     position: absolute;
     top: 0;
-    left: 0; }
+    left: 0;
+    padding: 1em; }
   .flip.card .front {
     z-index: 2; }
   .flip.card .back {
