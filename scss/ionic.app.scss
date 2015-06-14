@@ -45,9 +45,16 @@ body,
 h1,
 h2,
 h3,
-button {
+button,
+input {
 	font-size: 16px;
 	font-family: Gotham, sans-serif;
+}
+
+.custom-button {
+	max-height: initial;
+	min-height: initial;
+	line-height: 1;
 }
 
 // End of ionic fix
@@ -66,21 +73,34 @@ ion-content {
 	margin: 2% !important;
 }
 
+h2 {
+	margin-top: 0;
+	font-size: 35px;
+	line-height: 62px;
+	font-weight: 200;
+}
+h1 {
+	margin-top: 0;
+	font-size: 63px;
+	line-height: 66px;
+	font-weight: bold;
+}
+
 .menu-column {
-	height: 100%;
-	display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
-	display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
-	display: -ms-flexbox;      /* TWEENER - IE 10 */
-	display: -webkit-flex;     /* NEW - Chrome */
-	display: flex;             /* NEW - Chrome */
-	-webkit-flex-direction: column;
-	-ms-flex-direction: column;
-	flex-direction: column;
 
 	.create,
 	.decks {
 		svg {
 			width: 66px;
+		}
+	}
+
+	.create {
+		svg {
+			fill: $balanced;
+
+			&.pulse {
+			}
 		}
 	}
 
@@ -104,7 +124,7 @@ ion-content {
 	}
 }
 
-.response.column {
+.quiz.column {
 	height: 100%;
 	display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
 	display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
@@ -165,17 +185,9 @@ ion-content {
 		}
 	}
 
-	.small-col {
-		height: 280px;
-		-webkit-flex-direction: row;
-		flex-direction: row;
-		-webkit-justify-content: center;
-		justify-content: center;
-		display: -webkit-flex;
-		display: flex;
-
-		img {
-			height: 100%;
+	.item-input {
+		.icon {
+			margin-right: 1em;
 		}
 	}
 }
@@ -234,11 +246,15 @@ ion-content {
 	-webkit-flex-direction: row;
 	-ms-flex-direction: row;
 	flex-direction: row;
-	height: 100%;
 	-webkit-justify-content: center;
 	-moz-box-pack: center;
 	-ms-flex-pack: center;
 	box-pack: center;
+	-webkit-perspective: 1000;
+	-moz-perspective: 1000;
+	-ms-perspective: 1000;
+	perspective: 1000;
+	height: 100%;
 
 	> div {
 		-webkit-align-self: center; /* Safari 7.0+ */
@@ -249,6 +265,108 @@ ion-content {
 			margin-right: 1em;
 		}
 	}
+
+	> svg {
+		height: 30px;
+		position: absolute;
+		left: 0;
+		width: 100%;
+	}
+}
+
+
+.deck-form {
+	&.ng-enter {
+		animation: zoomIn .3s;
+		z-index: 3;
+	}
+}
+
+.flip.card {
+	-webkit-transition: 0.5s;
+	transition: 0.5s;
+	-webkit-transform-style: preserve-3d;
+	transform-style: preserve-3d;
+	overflow: initial;
+	-webkit-transform-origin: right center;
+	transform-origin: right center;
+
+	position: relative;
+
+	&.ng-enter {
+		animation: zoomIn .3s;
+		-webkit-animation: zoomIn .3s;
+	}
+
+	&.ng-leave {
+		position: absolute;
+		top: 20%;
+		left: 20%;
+		animation: fadeOut .5s;
+		-webkit-animation: fadeOut .5s;
+	}
+
+	&,
+	.front,
+	.back {
+		width: 440px;
+		height: 220px;
+	}
+
+	&.flipped {
+		transform: translateX( -100% ) rotateY( 180deg );
+		-webkit-transform: translateX( -100% ) rotateY( 180deg );
+	}
+
+	.item.item-input {
+		border: 1px solid #ddd;
+	}
+
+	/* hide back of pane during swap */
+	.front, .back {
+		backface-visibility: hidden;
+		-webkit-backface-visibility: hidden;
+
+		padding: 1em;
+
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+
+	.front {
+		z-index: 2;
+	}
+
+	/* back, initially hidden pane */
+	.back {
+		transform: rotateY(-180deg);
+		-webkit-transform: rotateY(-180deg);
+	}
+
+	.previous.button {
+		position: absolute;
+		left: -5em;
+		top: 40%;
+	}
+
+	.next.button {
+		position: absolute;
+		right: -5em;
+		top: 40%;
+	}
+
+	.done.button {
+		position: absolute;
+		left: 80%;
+		bottom: -3em;
+	}
+
+	.title {
+		position: absolute;
+		top: -1.5em;
+		left: 1em;
+	}
 }
 
 .big-col {
@@ -256,32 +374,73 @@ ion-content {
 	flex: 1 1 61.8%;
 }
 
-h2 {
-	margin-top: 0;
-	font-size: 35px;
-	line-height: 62px;
-	font-weight: 200;
-}
-h1 {
-	margin-top: 0;
-	font-size: 63px;
-	line-height: 66px;
-	font-weight: bold;
-}
-
 .small-col {
 	-webkit-flex: 1 1 38.2%;
 	flex: 1 1 38.2%;
+	height: 280px;
+	-webkit-flex-direction: row;
+	flex-direction: row;
+	-webkit-justify-content: center;
+	justify-content: center;
+	display: -webkit-flex;
+	display: flex;
+
+	img {
+		height: 100%;
+	}
 }
 
+// Animation stuff
 @-webkit-keyframes pulse {
   0%   { opacity: 1; }
-  50% { opacity: 0; }
+  50% { opacity: 0.1; }
   100% { opacity: 1; }
 }
 
 @keyframes pulse {
   0%   { opacity: 1; }
-  50% { opacity: 0; }
+  50% { opacity: 0.1; }
   100% { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@-webkit-keyframes fadeOut {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes zoomIn {
+  0% {
+    opacity: 0;
+    transform: scale3d(.3, .3, .3);
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes zoomIn {
+  0% {
+    opacity: 0;
+    transform: scale3d(.3, .3, .3);
+  }
+
+  50% {
+    opacity: 1;
+  }
 }

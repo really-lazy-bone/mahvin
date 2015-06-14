@@ -1,7 +1,11 @@
-angular.module('starter')
-	.controller('ResponseCtrl', function($state) {
+angular.module('mahvin')
+	.controller('QuizCtrl', function($state, $stateParams, DataService) {
 		var vm = this;
 
+		// sanity check
+		console.log('Hello Quiz');
+
+		// hard coded map for random response
 		vm.messageMap = {
 			success: [
 				"Finally, You Figured it Out!",
@@ -20,30 +24,71 @@ angular.module('starter')
 			]
 		};
 
-		// sanity check
-		console.log('Hello Response');
+		vm.deck = DataService.getDeck($stateParams.id);
+		console.log('Getting deck for Quiz ' + JSON.stringify(vm.deck));
+
+		vm.currentQuestionId = 0;
+		vm.mode = 'prompt';
+		vm.question = vm.deck.questions[vm.currentQuestionId];
+
+		update();
 
 		vm.goBack = goBack;
-
-		init();
+		vm.guess = guess;
+		vm.retry = retry;
+		vm.toPreviousQuestion = toPreviousQuestion;
+		vm.toNextQuestion = toNextQuestion;
+		vm.done = done;
 
 		function goBack () {
 			$state.go('landing');
 		}
 
-		function init () {
-			vm.success = true;
+		function guess () {
+			vm.mode = (
+				vm.answer.toLowerCase() ===
+				vm.deck.questions[vm.currentQuestionId].answer.toLowerCase()
+			) ? 'success' : 'error';
 
-			vm.question = 'Define pedantic';
+			update();
+		}
 
+		function retry () {
+			vm.mode = 'prompt';
+			vm.message = null;
+
+			update();
+		}
+
+		function toPreviousQuestion () {
+			vm.currentQuestionId --;
+			vm.question = vm.deck.questions[vm.currentQuestionId];
+
+			retry();
+		}
+
+		function toNextQuestion () {
+			vm.currentQuestionId ++;
+			vm.question = vm.deck.questions[vm.currentQuestionId];
+
+			retry();
+		}
+
+		function done () {
+			$state.go('menu');
+		}
+
+		function update () {
 			var randomIndex = Math.floor(Math.random() * 3);
 
-			if (vm.success) {
+			if (vm.mode === 'success') {
 				vm.imageUrl = 'img/standing.png';
 				vm.message = vm.messageMap.success[randomIndex];
-			} else if (vm.error) {
+			} else if (vm.mode === 'error') {
 				vm.imageUrl = 'img/double-point.png';
 				vm.message = vm.messageMap.error[randomIndex];
+			} else if (vm.mode === 'prompt') {
+				vm.imageUrl = 'img/single-point.png';
 			}
 		}
 	})
@@ -59,14 +104,19 @@ angular.module('starter')
 			$state.go('menu');
 		}
 	})
-	.controller('MenuCtrl', function($state) {
+	.controller('MenuCtrl', function($state, DataService) {
 		var vm = this;
 
 		// sanity check
 		console.log('Hello Menu');
 
+		vm.decks = DataService.getDecks();
+
+		console.log('Getting decks ' + JSON.stringify(vm.decks));
+
 		vm.goBack = goBack;
 		vm.goToCreate = goToCreate;
+		vm.goToQuiz = goToQuiz;
 
 		function goBack () {
 			$state.go('landing');
@@ -75,23 +125,119 @@ angular.module('starter')
 		function goToCreate () {
 			$state.go('input');
 		}
+
+		function goToQuiz (id) {
+			$state.go('quiz', {id: id});
+		}
 	})
 	.controller('InputCtrl', function(
+		$state,
 		$cordovaCapture,
 		$cordovaMedia,
 		$ionicPlatform,
 		$cordovaFile,
 		$cordovaFileTransfer,
-		$timeout
+		$timeout,
+		DataService
 	) {
 		var vm = this;
 
 		// sanity check
 		console.log('Hello Input');
 
+		vm.addingDeck = true;
+		vm.deck = {
+			name: '',
+			questions: []
+		};
+		vm.currentQuestionId = 0;
+
 		vm.speech = speech;
 		vm.takePicture = takePicture;
 		vm.testSound = testSound;
+		vm.addDeck = addDeck;
+		vm.cancelAddingQuestion = cancelAddingQuestion;
+		vm.cancelAddingDeck = cancelAddingDeck;
+		vm.goToBackOfCard = goToBackOfCard;
+		vm.goToFrontOfCard = goToFrontOfCard;
+		vm.addQuestion = addQuestion;
+		vm.done = done;
+		vm.toPreviousQuestion = toPreviousQuestion;
+		vm.toNextQuestion = toNextQuestion;
+
+		function addDeck () {
+			vm.addingDeck = false;
+		}
+
+		function cancelAddingQuestion () {
+			vm.addingDeck = true;
+		}
+
+		function cancelAddingDeck () {
+			$state.go('menu');
+		}
+
+		function goToBackOfCard () {
+			vm.addingAnswer = true;
+		}
+
+		function goToFrontOfCard () {
+			vm.addingAnswer = false;
+			vm.ansewr = '';
+		}
+
+		function addQuestion () {
+			if (vm.currentQuestionId === vm.deck.questions.length) {
+				vm.deck.questions.push({
+					question: vm.question,
+					answer: vm.answer
+				});
+
+				vm.question = '';
+				vm.answer = '';
+
+				console.log('Adding new question ' + JSON.stringify(vm.deck));
+
+				vm.addingAnswer = false;
+				vm.currentQuestionId ++;
+			} else {
+				vm.deck.questions[vm.currentQuestionId] = {
+					question: vm.question,
+					answer: vm.answer
+				};
+
+				console.log('Updated question ' + JSON.stringify(vm.deck));
+
+				vm.currentQuestionId ++;
+				vm.addingAnswer = false;
+
+				if (vm.currentQuestionId === vm.deck.questions.length) {
+					vm.question = '';
+					vm.answer = '';
+				} else {
+					vm.question = vm.deck.questions[vm.currentQuestionId].question;
+					vm.answer = vm.deck.questions[vm.currentQuestionId].answer;
+				}
+			}
+		}
+
+		function done () {
+			DataService.createDeck(vm.deck);
+
+			$state.go('menu');
+		}
+
+		function toPreviousQuestion () {
+			vm.currentQuestionId --;
+			vm.question = vm.deck.questions[vm.currentQuestionId].question;
+			vm.answer = vm.deck.questions[vm.currentQuestionId].answer;
+		}
+
+		function toNextQuestion () {
+			vm.currentQuestionId ++;
+			vm.question = vm.deck.questions[vm.currentQuestionId].question;
+			vm.answer = vm.deck.questions[vm.currentQuestionId].answer;
+		}
 
 		function testSound () {
 			document.addEventListener('deviceready', function() {
