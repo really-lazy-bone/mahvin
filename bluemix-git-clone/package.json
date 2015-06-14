@@ -1,0 +1,20 @@
+{
+  "name": "NodejsStarterApp",
+  "version": "0.0.1",
+  "description": "A sample nodejs app for Bluemix",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "body-parser": "^1.12.2",
+    "cfenv": "1.0.x",
+    "connect-busboy": "0.0.2",
+    "express": "4.12.x",
+    "iod-node": "git+https://github.com/HP-IDOL-OnDemand/iod-node",
+    "lame": "^1.2.2",
+    "multer": "^0.1.8",
+    "watson-developer-cloud": "^0.9.11",
+    "wav": "^1.0.0"
+  },
+  "repository": {}
+}

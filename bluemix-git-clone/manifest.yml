@@ -1,0 +1,10 @@
+applications:
+- services:
+  - Text to Speech-yo
+  disk_quota: 1024M
+  host: mahvin
+  name: mahvin
+  path: .
+  domain: mybluemix.net
+  instances: 1
+  memory: 256M
