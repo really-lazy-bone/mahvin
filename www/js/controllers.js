@@ -1,5 +1,5 @@
 angular.module('mahvin')
-	.controller('QuizCtrl', function($state, $stateParams, DataService) {
+	.controller('QuizCtrl', function($state, $stateParams, DataService, $cordovaFileTransfer, $cordovaMedia, $cordovaFile) {
 		var vm = this;
 
 		// sanity check
@@ -31,6 +31,8 @@ angular.module('mahvin')
 		vm.mode = 'prompt';
 		vm.question = vm.deck.questions[vm.currentQuestionId];
 
+		textToSpeech();
+
 		update();
 
 		vm.goBack = goBack;
@@ -38,7 +40,68 @@ angular.module('mahvin')
 		vm.retry = retry;
 		vm.toPreviousQuestion = toPreviousQuestion;
 		vm.toNextQuestion = toNextQuestion;
+		vm.learnMore = learnMore;
 		vm.done = done;
+
+		function textToSpeech () {
+			document.addEventListener('deviceready', function() {
+				$cordovaFile.checkFile(
+					cordova.file.tempDirectory,
+					vm.deck.name + '-' + vm.currentQuestionId + '.mp3'
+				).then(function(result) {
+					console.log(JSON.stringify(result));
+
+					var media = $cordovaMedia.newMedia(
+						result.toInternalURL()
+					);
+
+					media.then(function() {
+						console.log('Got file');
+					}, function(err) {
+						console.error('error getting media file');
+						console.error(JSON.stringify(err));
+					});
+
+					// success
+					// sanity check
+					console.log('Playing audio ' + JSON.stringify(media));
+					media.play();
+				}, function() {
+					var url = "http://mahvin.mybluemix.net/textandspeech/speech?filename=" + vm.deck.name;
+					var targetPath = vm.deck.name + '-' + vm.currentQuestionId + '.mp3';
+					var trustHosts = true;
+					var options = {};
+
+					console.log('downloading speech file ' + url);
+
+					$cordovaFileTransfer
+						.download(url, targetPath, options, trustHosts)
+						.then(function(result) {
+							// Success!
+							var media = $cordovaMedia.newMedia(
+								result.toInternalURL()
+							);
+
+							media.then(function() {
+								console.log('Got file');
+							}, function(err) {
+								console.error('error getting media file');
+								console.error(JSON.stringify(err));
+							});
+
+							// success
+							// sanity check
+							console.log('Playing audio ' + JSON.stringify(media));
+							media.play();
+						}, function(err) {
+							// Error
+							console.error(JSON.stringify(err));
+						}, function (progress) {
+							console.log(progress);
+						});
+				});
+			}, false);
+		}
 
 		function goBack () {
 			$state.go('landing');
@@ -64,6 +127,10 @@ angular.module('mahvin')
 			vm.currentQuestionId --;
 			vm.question = vm.deck.questions[vm.currentQuestionId];
 
+			vm.answer = '';
+
+			textToSpeech();
+
 			retry();
 		}
 
@@ -71,7 +138,23 @@ angular.module('mahvin')
 			vm.currentQuestionId ++;
 			vm.question = vm.deck.questions[vm.currentQuestionId];
 
+			vm.answer = '';
+
+			textToSpeech();
+
 			retry();
+		}
+
+		function learnMore () {
+			vm.mode = 'learnmore';
+			vm.message = '';
+
+			DataService.learnMore(vm.question.question)
+				.then(function(response) {
+					vm.insight = response.data;
+				}, function(err) {
+					console.error(JSON.stringify(err));
+				});
 		}
 
 		function done () {
@@ -84,9 +167,13 @@ angular.module('mahvin')
 			if (vm.mode === 'success') {
 				vm.imageUrl = 'img/standing.png';
 				vm.message = vm.messageMap.success[randomIndex];
+				$cordovaMedia.newMedia('sound/success' + randomIndex + '.mp3')
+					.play();
 			} else if (vm.mode === 'error') {
 				vm.imageUrl = 'img/double-point.png';
 				vm.message = vm.messageMap.error[randomIndex];
+				$cordovaMedia.newMedia('sound/error' + randomIndex + '.mp3')
+					.play();
 			} else if (vm.mode === 'prompt') {
 				vm.imageUrl = 'img/single-point.png';
 			}
@@ -138,6 +225,8 @@ angular.module('mahvin')
 		$cordovaFile,
 		$cordovaFileTransfer,
 		$timeout,
+		$ionicLoading,
+		$cordovaImagePicker,
 		DataService
 	) {
 		var vm = this;
@@ -154,7 +243,6 @@ angular.module('mahvin')
 
 		vm.speech = speech;
 		vm.takePicture = takePicture;
-		vm.testSound = testSound;
 		vm.addDeck = addDeck;
 		vm.cancelAddingQuestion = cancelAddingQuestion;
 		vm.cancelAddingDeck = cancelAddingDeck;
@@ -187,6 +275,9 @@ angular.module('mahvin')
 		}
 
 		function addQuestion () {
+			console.log('Calling text to speech function');
+			textToSpeech();
+
 			if (vm.currentQuestionId === vm.deck.questions.length) {
 				vm.deck.questions.push({
 					question: vm.question,
@@ -235,76 +326,38 @@ angular.module('mahvin')
 
 		function toNextQuestion () {
 			vm.currentQuestionId ++;
-			vm.question = vm.deck.questions[vm.currentQuestionId].question;
-			vm.answer = vm.deck.questions[vm.currentQuestionId].answer;
+
+			if (vm.deck.questions[vm.currentQuestionId]) {
+				vm.question = vm.deck.questions[vm.currentQuestionId].question;
+				vm.answer = vm.deck.questions[vm.currentQuestionId].answer;
+			} else {
+				vm.question = '';
+				vm.answer = '';
+			}
 		}
 
-		function testSound () {
-			document.addEventListener('deviceready', function() {
-				var media = $cordovaMedia.newMedia(
-					'cdvfile://localhost/temporary/converted.mp3'
-				);
+		function textToSpeech () {
+			console.log('handling text to speech');
 
-				media.then(function() {
-					console.log('Got file');
-				}, function(err) {
-					console.error('error getting media file');
-					console.error(JSON.stringify(err));
-				});
-
-				// success
-				// sanity check
-				console.log('Playing audio ' + JSON.stringify(media));
-				media.play();
-
-				// var url = "http://muses.mybluemix.net/textandspeech/getspeech";
-				// var targetPath = cordova.file.tempDirectory + "testSound.ogg";
-				// var trustHosts = true;
-				// var options = {};
-
-				// console.log('downloading speech file ' + url);
-
-				// $cordovaFileTransfer
-				// 	.download(url, targetPath, options, trustHosts)
-				// 	.then(function(result) {
-				// 		// Success!
-				// 		document.addEventListener("deviceready", function () {
-				// 			var media = $cordovaMedia.newMedia(
-				// 				result.toInternalURL()
-				// 			);
-
-				// 			media.then(function() {
-				// 				console.log('Got file');
-				// 			}, function(err) {
-				// 				console.error('error getting media file');
-				// 				console.error(JSON.stringify(err));
-				// 			});
-
-				// 			// success
-				// 			// sanity check
-				// 			console.log('Playing audio ' + JSON.stringify(media));
-				// 			media.play();
-				// 		}, false);
-				// 	}, function(err) {
-				// 		// Error
-				// 		alert(JSON.stringify(err));
-				// 	}, function (progress) {
-				// 		console.log(progress);
-				// 		$timeout(function () {
-				// 			console.log((progress.loaded / progress.total) * 100);
-				// 		});
-				// 	});
-			}, false);
+			DataService.textToSpeech(
+				vm.question,
+				vm.deck.name + '-' + vm.currentQuestionId
+			).then(function(response) {
+				console.log('Sound file created');
+			}, function(err) {
+				// remove loading indicator
+				console.error(JSON.stringify(err));
+			});
 		}
 
-		function speech (event) {
+		function speech (event, type) {
 			event.stopPropagation();
 
 			// sanity check
 			console.log('start recording');
 
 			var options = {
-				limit: 3,
+				limit: 1,
 				duration: 10
 			};
 
@@ -312,29 +365,37 @@ angular.module('mahvin')
 				$cordovaCapture.captureAudio(options)
 					.then(function(audioData) {
 						// testing 1 second delay to play audio
-						console.log('Got Audio');
+						console.log('Got Recorded Audio');
 						console.log(JSON.stringify(audioData));
 
 						// {
 						// 	'localURL': '.wav' // android for .amr
 						// }
 
-						document.addEventListener("deviceready", function () {
-							var media = $cordovaMedia.newMedia(
-								audioData[0].localURL
-							);
+						$cordovaFileTransfer.upload('http://mahvin.mybluemix.net/textandspeech/text', audioData[0].localURL)
+								.then(function(result) {
+									// Success!
+									console.log('Uploaded');
 
-							media.then(function() {
-								console.log('Got Recorded File');
-							}, function(err) {
+									console.log(JSON.stringify(result));
 
-							});
+									if (type === 'qeustion') {
+										vm.question = result.response
+											.split('"')
+											.join('');
+									} else if (type === 'answer') {
+										vm.answer = result.response
+											.split('"')
+											.join('');
+									}
 
-							// success
-							// sanity check
-							console.log('Playing audio' + JSON.stringify(media));
-							media.play();
-						}, false);
+								}, function(err) {
+									// Error
+									console.log(JSON.stringify(err));
+								}, function (progress) {
+									// constant progress updates
+									console.log(JSON.stringify(progress));
+								});
 
 					}, function(err) {
 						alert(JSON.stringify(err));
@@ -342,7 +403,7 @@ angular.module('mahvin')
 			}, false);
 		}
 
-		function takePicture (event) {
+		function takePicture (event, type) {
 			event.stopPropagation();
 
 			// sanity check
@@ -351,13 +412,50 @@ angular.module('mahvin')
 			var options = { limit: 1 };
 
 			document.addEventListener("deviceready", function () {
-				$cordovaCapture.captureImage(options)
-					.then(function(imageData) {
-						// Success! Image data is here
-						console.log(JSON.stringify(imageData));
-					}, function(err) {
-						// An error occurred. Show a message to the user
-						alert(JSON.stringify(err));
+				// $cordovaCapture.captureImage(options)
+				// 	.then(function(imageData) {
+				// 		// Success! Image data is here
+				// 		console.log(JSON.stringify(imageData));
+				// 	}, function(err) {
+				// 		// An error occurred. Show a message to the user
+				// 		alert(JSON.stringify(err));
+				// 	});
+				var options = {
+					maximumImagesCount: 1,
+					width: 800,
+					height: 800,
+					quality: 80
+				};
+
+				$cordovaImagePicker.getPictures(options)
+					.then(function (results) {
+						console.log('Getting image ' + results[0]);
+
+						$cordovaFileTransfer.upload('http://mahvin.mybluemix.net/textandimage/text', results[0])
+								.then(function(result) {
+									// Success!
+									console.log('Uploaded');
+
+									if (type === 'qeustion') {
+										vm.question = result.response
+											.split('"')
+											.join('');
+									} else if (type === 'answer') {
+										vm.answer = result.response
+											.split('"')
+											.join('');
+									}
+
+								}, function(err) {
+									// Error
+									console.error(JSON.stringify(err));
+								}, function (progress) {
+									// constant progress updates
+									console.log(progress);
+								});
+
+					}, function(error) {
+						// error getting photos
 					});
 			}, false);
 		}

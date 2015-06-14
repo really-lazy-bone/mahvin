@@ -65,9 +65,23 @@
           <button class="button button-clear button-balanced"
             ng-disabled="!quiz.answer"
             ng-click="quiz.guess()">
-            Guess
+            Submit Answer
           </button>
         </form>
+
+        <div class="list list-inset"
+          ng-show="quiz.mode === 'learnmore'">
+            <div class="item item-divider">
+              {{quiz.insight.abstract}}
+            </div>
+
+            <div class="item"
+              ng-repeat="concept in quiz.insight.related_concepts track by $index">
+              <a onclick="window.open('{{concept.wikipedia_link}}')">
+                {{concept.concept}}
+              </a>
+            </div>
+        </div>
 
 				<div class="actions"
           ng-show="quiz.mode !== 'prompt'">
@@ -76,7 +90,8 @@
             ng-click="quiz.toPreviousQuestion()">
 					</button>
 					<button class="button button-clear"
-						ng-if="quiz.mode === 'success'">
+						ng-if="quiz.mode === 'success'"
+            ng-click="quiz.learnMore()">
 						Learn More
 					</button>
           <button class="button button-clear"

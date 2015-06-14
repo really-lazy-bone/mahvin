@@ -1,6 +1,10 @@
 angular.module('mahvin')
-	.service('DataService', function() {
+	.service('DataService', function(
+		$http, $q, $cordovaFileTransfer, $cordovaFile
+	) {
 		var LOCAL_STORAGE_KEY = 'mahvin.decks';
+		var SERVER_URL = 'http://mahvin.mybluemix.net';
+
 		// replace the method call here to be persisted to some sort of server
 		// later when working on app
 		return {
@@ -9,7 +13,8 @@ angular.module('mahvin')
 			createDeck: createDeck,
 			getCard: getCard,
 			shuffleDeckCards: shuffleDeckCards,
-			textToSpeech: textToSpeech
+			textToSpeech: textToSpeech,
+			learnMore: learnMore
 		};
 
 		function getDecks () {
@@ -44,8 +49,48 @@ angular.module('mahvin')
 			updateDecks(decks);
 		}
 
-		function textToSpeech () {
+		function textToSpeech (text, filename) {
+			var deferred = $q.defer();
 
+			$http.post(SERVER_URL + '/textandspeech/speech', {
+				text: text,
+				filename: filename
+			}).then(function(response) {
+				console.log('Successfully created text to speech file');
+				console.log('Now downloading sound file from server');
+
+				console.log(response);
+
+				var url = SERVER_URL + '/textandspeech/speech/' + filename;
+				var targetPath = cordova.file.tempDirectory + filename + '.mp3';
+				var trustHosts = true;
+				var options = {};
+
+				console.log('downloading speech file ' + url);
+
+				$cordovaFileTransfer
+					.download(url, targetPath, options, trustHosts)
+					.then(function(result) {
+						// Success!
+						console.log('Successfully created the text to speech file ' + filename);
+						deferred.resolve('Sound file created');
+					}, function(err) {
+						// Error
+						alert(JSON.stringify(err));
+					}, function (progress) {
+						console.log(JSON.stringify(progress));
+					});
+
+			}, function(err) {
+				deferred.reject('Fail to send request to text to speech');
+				console.error(JSON.stringify(err));
+			});
+
+			return deferred.promise;
+		}
+
+		function learnMore (term) {
+			return $http.get(SERVER_URL + '/conceptinsight/conceptinsight/' + term);
 		}
 
 		// private helpers functions

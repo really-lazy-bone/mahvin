@@ -170,6 +170,11 @@ h1 {
 		flex: 1;
 	}
 
+	.card, .list-inset {
+		height: 160px;
+		overflow: auto;
+	}
+
 	.actions {
 		position: absolute;
 		bottom: 2px;
@@ -250,6 +255,7 @@ h1 {
 	-moz-box-pack: center;
 	-ms-flex-pack: center;
 	box-pack: center;
+
 	-webkit-perspective: 1000;
 	-moz-perspective: 1000;
 	-ms-perspective: 1000;
@@ -260,6 +266,7 @@ h1 {
 		-webkit-align-self: center; /* Safari 7.0+ */
 		align-self: center;
 		width: 70%;
+		padding: 1em;
 
 		.icon {
 			margin-right: 1em;
@@ -287,7 +294,7 @@ h1 {
 	transition: 0.5s;
 	-webkit-transform-style: preserve-3d;
 	transform-style: preserve-3d;
-	overflow: initial;
+	overflow: visible;
 	-webkit-transform-origin: right center;
 	transform-origin: right center;
 
@@ -309,7 +316,7 @@ h1 {
 	&,
 	.front,
 	.back {
-		width: 440px;
+		width: 425px;
 		height: 220px;
 	}
 
@@ -326,8 +333,6 @@ h1 {
 	.front, .back {
 		backface-visibility: hidden;
 		-webkit-backface-visibility: hidden;
-
-		padding: 1em;
 
 		position: absolute;
 		top: 0;
