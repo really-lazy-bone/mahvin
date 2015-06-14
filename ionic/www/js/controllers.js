@@ -379,7 +379,7 @@ angular.module('mahvin')
 
 									console.log(JSON.stringify(result));
 
-									if (type === 'qeustion') {
+									if (type === 'question') {
 										vm.question = result.response
 											.split('"')
 											.join('');
