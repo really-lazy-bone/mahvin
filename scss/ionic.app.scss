@@ -1,0 +1,287 @@
+/*
+To customize the look and feel of Ionic, you can override the variables
+in ionic's _variables.scss file.
+
+For example, you might change some of the default colors:
+*/
+
+$light:                           #fff !default;
+$stable:                          #f8f8f8 !default;
+$positive:                        #387ef5 !default;
+$calm:                            #11c1f3 !default;
+$balanced:                        #33cd5f !default;
+$energized:                       #ffc900 !default;
+$assertive:                       #ef473a !default;
+$royal:                           #886aea !default;
+$dark:                            #424242 !default;
+
+// The path for our ionicons font files, relative to the built CSS in www/css
+$ionicons-font-path: "../lib/ionic/fonts" !default;
+
+// Include all of Ionic
+@import "www/lib/ionic/scss/ionic";
+
+@font-face {
+    font-family: Gotham; /*a name to be used later*/
+    src: url('font/GothamHTF-LightCondensed.otf') format("opentype"); /*URL to font*/
+}
+@font-family {
+	font-family: Gotham; /*a name to be used later*/
+    src: url('font/GothamHTF-BoldCondensed.otf') format("opentype"); /*URL to font*/
+    font-weight: bold;
+}
+
+// fix hack in ionic
+.row + .row {
+	margin-top: 0;
+	padding-top: 5px;
+}
+
+ion-content.scroll-content {
+	padding-top: 0;
+}
+
+body,
+h1,
+h2,
+h3,
+button {
+	font-size: 16px;
+	font-family: Gotham, sans-serif;
+}
+
+// End of ionic fix
+
+// limit height
+body,
+html,
+ion-pane,
+ui-view,
+.scroll,
+ion-content {
+	height: 100%;
+}
+
+ion-content {
+	margin: 2% !important;
+}
+
+.menu-column {
+	height: 100%;
+	display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+	display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+	display: -ms-flexbox;      /* TWEENER - IE 10 */
+	display: -webkit-flex;     /* NEW - Chrome */
+	display: flex;             /* NEW - Chrome */
+	-webkit-flex-direction: column;
+	-ms-flex-direction: column;
+	flex-direction: column;
+
+	.create,
+	.decks {
+		svg {
+			width: 66px;
+		}
+	}
+
+	.decks {
+		flex-direction: row;
+		-webkit-flex-direction: row;
+		display: -webkit-flex;
+		display: flex;
+		-webkit-flex-wrap: wrap;
+		flex-wrap: wrap;
+
+		h2 {
+			flex: 1 1 100%;
+			-webkit-flex: 1 1 100%;
+		}
+
+		.deck {
+			text-align: center;
+			margin-right: 24px;
+		}
+	}
+}
+
+.response.column {
+	height: 100%;
+	display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+	display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+	display: -ms-flexbox;      /* TWEENER - IE 10 */
+	display: -webkit-flex;     /* NEW - Chrome */
+	display: flex;             /* NEW - Chrome */
+	-webkit-flex-direction: column;
+	-ms-flex-direction: column;
+	flex-direction: column;
+
+	.row svg {
+		height: 30px;
+	}
+
+	&.success {
+		svg {
+			fill: rgb(92, 204, 123);
+		}
+
+		.small-col {
+			-webkit-order: -1;
+			order: -1;
+		}
+
+		.actions {
+			left: auto;
+			right: 2em;
+		}
+	}
+
+	&.error {
+		svg {
+			fill: rgb(230, 69, 201);
+		}
+	}
+
+	.row + .row {
+		-webkit-box-flex: 1;
+		-webkit-flex: 1;
+		-moz-box-flex: 1;
+		-moz-flex: 1;
+		-ms-flex: 1;
+		flex: 1;
+	}
+
+	.actions {
+		position: absolute;
+		bottom: 2px;
+		left: 2px;
+
+		.button.invisible {
+			color: #fff;
+		}
+
+		.button .icon:before, .button.icon:before, .button.icon-left:before, .button.icon-right:before {
+			font-size: 14px;
+			line-height: 46px;
+		}
+	}
+
+	.small-col {
+		height: 280px;
+		-webkit-flex-direction: row;
+		flex-direction: row;
+		-webkit-justify-content: center;
+		justify-content: center;
+		display: -webkit-flex;
+		display: flex;
+
+		img {
+			height: 100%;
+		}
+	}
+}
+
+.title.row {
+	height: 100%;
+	display: -webkit-box;      /* OLD - iOS 6-, Safari 3.1-6 */
+	display: -moz-box;         /* OLD - Firefox 19- (buggy but mostly works) */
+	display: -ms-flexbox;      /* TWEENER - IE 10 */
+	display: -webkit-flex;     /* NEW - Chrome */
+	display: flex;             /* NEW - Chrome */
+	-webkit-flex-direction: row;
+	-ms-flex-direction: row;
+	flex-direction: row;
+
+	.small-col {
+		height: 330px;
+		-webkit-flex-direction: row;
+		flex-direction: row;
+		-webkit-justify-content: center;
+		justify-content: center;
+		display: -webkit-flex;
+		display: flex;
+
+		img {
+			height: 100%;
+		}
+	}
+
+	.big-col {
+		position: relative;
+
+
+		& > svg {
+			width: 299px;
+			position: absolute;
+			top: 27.5%;
+
+			animation: pulse 2.5s infinite cubic-bezier(0.43, -0.39, 1, 1);
+			-webkit-animation: pulse 2.5s infinite cubic-bezier(0.43, -0.39, 1, 1);
+		}
+	}
+}
+
+.center.row {
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: -moz-box;
+	display: -moz-flex;
+	display: -ms-flexbox;
+	display: flex;
+	-webkit-box-orient: horizontal;
+	-moz-box-orient: horizontal;
+	-webkit-box-direction: normal;
+	-moz-box-direction: normal;
+	-webkit-flex-direction: row;
+	-ms-flex-direction: row;
+	flex-direction: row;
+	height: 100%;
+	-webkit-justify-content: center;
+	-moz-box-pack: center;
+	-ms-flex-pack: center;
+	box-pack: center;
+
+	> div {
+		-webkit-align-self: center; /* Safari 7.0+ */
+		align-self: center;
+		width: 70%;
+
+		.icon {
+			margin-right: 1em;
+		}
+	}
+}
+
+.big-col {
+	-webkit-flex: 1 1 61.8%;
+	flex: 1 1 61.8%;
+}
+
+h2 {
+	margin-top: 0;
+	font-size: 35px;
+	line-height: 62px;
+	font-weight: 200;
+}
+h1 {
+	margin-top: 0;
+	font-size: 63px;
+	line-height: 66px;
+	font-weight: bold;
+}
+
+.small-col {
+	-webkit-flex: 1 1 38.2%;
+	flex: 1 1 38.2%;
+}
+
+@-webkit-keyframes pulse {
+  0%   { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes pulse {
+  0%   { opacity: 1; }
+  50% { opacity: 0; }
+  100% { opacity: 1; }
+}
